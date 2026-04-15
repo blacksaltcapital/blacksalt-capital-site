@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investor Login — BlackSalt Capital L.P.</title>
+  <meta name="description" content="Secure investor portal for BlackSalt Capital L.P. limited partners." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- ============================================================
+       SUPABASE: Load the Supabase JavaScript library from CDN.
+       This gives us access to authentication and database features.
+       ============================================================ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    /* ---------- Login-specific styles ---------- */
+
+    .login-page {
+      min-height: calc(100vh - 5.75rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 0;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 2.5rem 2rem 2rem;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: var(--panel);
+    }
+
+    .login-card h1 {
+      font-size: 1.5rem;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin: 0 0 0.5rem;
+      max-width: 100%;
+    }
+
+    .login-card .subtitle {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 0 0 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.02em;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid var(--line);
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-group input::placeholder {
+      color: rgba(166, 175, 187, 0.5);
+    }
+
+    .form-group input:focus {
+      border-color: var(--accent);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: var(--accent);
+      color: var(--bg);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+      margin-top: 0.5rem;
+    }
+
+    .login-btn:hover {
+      opacity: 0.88;
+    }
+
+    .login-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .login-error {
+      margin-top: 1rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 0.5rem;
+      background: rgba(220, 80, 80, 0.12);
+      border: 1px solid rgba(220, 80, 80, 0.25);
+      color: #e87171;
+      font-size: 0.85rem;
+      display: none; /* Hidden by default, shown via JS */
+    }
+
+    .login-footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .login-footer a {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       HEADER: Same header as your main site for consistency.
+       The "Investor Login" button is replaced with "Back to Site".
+       ============================================================ -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand" aria-label="BlackSalt Capital home">BlackSalt Capital L.P.</a>
+      <div class="header-actions">
+        <nav id="site-nav" class="site-nav" aria-label="Primary navigation">
+          <a href="index.html">Back to Site</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="login-page">
+      <div class="login-card">
+        <h1>Investor Portal</h1>
+        <p class="subtitle">Sign in to access your statements and documents.</p>
+
+        <!-- Login Form -->
+        <form id="login-form">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Your password" required autocomplete="current-password" />
+          </div>
+          <button type="submit" class="login-btn" id="login-btn">Sign In</button>
+        </form>
+
+        <!-- Error message area (hidden by default) -->
+        <div class="login-error" id="login-error"></div>
+
+        <div class="login-footer">
+          Need access? Contact <a href="mailto:eli@blacksaltcapitallp.com">eli@blacksaltcapitallp.com</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> BlackSalt Capital L.P. All rights reserved.</p>
+      <a href="index.html">Back to site</a>
+    </div>
+  </footer>
+
+  <script>
+    // ============================================================
+    // SETUP: Replace these two values with YOUR Supabase credentials.
+    // You'll find them in: Supabase Dashboard > Settings > API
+    // ============================================================
+    const SUPABASE_URL = 'https://hqhomownlrjczlxalkpc.supabase.co';   // <-- Replace this
+    const SUPABASE_KEY = 'sb_publishable_n-pqJPmUR04xTkI1-TC-rw_9LIFslUm';                     // <-- Replace this
+
+    // Initialize the Supabase client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Set footer year
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // ============================================================
+    // CHECK: If user is already logged in, skip to dashboard.
+    // ============================================================
+    (async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        window.location.href = 'dashboard.html';
+      }
+    })();
+
+    // ============================================================
+    // LOGIN: Handle the form submission.
+    // ============================================================
+    const form = document.getElementById('login-form');
+    const loginBtn = document.getElementById('login-btn');
+    const errorBox = document.getElementById('login-error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); // Prevent page reload
+
+      // Disable button while processing
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Signing in…';
+      errorBox.style.display = 'none';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      // Attempt sign-in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        // Show the error to the user
+        errorBox.textContent = 'Invalid email or password. Please try again.';
+        errorBox.style.display = 'block';
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign In';
+      } else {
+        // Success! Redirect to the investor dashboard
+        window.location.href = 'dashboard.html';
+      }
+    });
+  </script>
+</body>
+</html>
