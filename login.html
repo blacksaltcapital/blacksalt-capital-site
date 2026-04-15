@@ -11,15 +11,9 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- ============================================================
-       SUPABASE: Load the Supabase JavaScript library from CDN.
-       This gives us access to authentication and database features.
-       ============================================================ -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* ---------- Login-specific styles ---------- */
-
     .login-page {
       min-height: calc(100vh - 5.75rem);
       display: flex;
@@ -117,7 +111,7 @@
       border: 1px solid rgba(220, 80, 80, 0.25);
       color: #e87171;
       font-size: 0.85rem;
-      display: none; /* Hidden by default, shown via JS */
+      display: none;
     }
 
     .login-footer {
@@ -136,10 +130,6 @@
 </head>
 <body>
 
-  <!-- ============================================================
-       HEADER: Same header as your main site for consistency.
-       The "Investor Login" button is replaced with "Back to Site".
-       ============================================================ -->
   <header class="site-header">
     <div class="container header-inner">
       <a href="index.html" class="brand" aria-label="BlackSalt Capital home">BlackSalt Capital L.P.</a>
@@ -157,7 +147,6 @@
         <h1>Investor Portal</h1>
         <p class="subtitle">Sign in to access your statements and documents.</p>
 
-        <!-- Login Form -->
         <form id="login-form">
           <div class="form-group">
             <label for="email">Email</label>
@@ -170,7 +159,6 @@
           <button type="submit" class="login-btn" id="login-btn">Sign In</button>
         </form>
 
-        <!-- Error message area (hidden by default) -->
         <div class="login-error" id="login-error"></div>
 
         <div class="login-footer">
@@ -190,39 +178,32 @@
   <script>
     // ============================================================
     // SETUP: Replace these two values with YOUR Supabase credentials.
-    // You'll find them in: Supabase Dashboard > Settings > API
     // ============================================================
-    const SUPABASE_URL = 'https://hqhomownlrjczlxalkpc.supabase.co';   // <-- Replace this
-    const SUPABASE_KEY = 'sb_publishable_n-pqJPmUR04xTkI1-TC-rw_9LIFslUm';                     // <-- Replace this
+    const SUPABASE_URL = 'https://hqhomownlrjczlxalkpc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_n-pqJPmUR04xTkI1-TC-rw_9LIFslUm';  // <-- Paste your publishable key here
 
-    // Initialize the Supabase client
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Use "sb" instead of "supabase" to avoid conflict with the library
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Set footer year
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-    // ============================================================
-    // CHECK: If user is already logged in, skip to dashboard.
-    // ============================================================
+    // If already logged in, go straight to dashboard
     (async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       if (session) {
         window.location.href = 'dashboard.html';
       }
     })();
 
-    // ============================================================
-    // LOGIN: Handle the form submission.
-    // ============================================================
+    // Handle login form
     const form = document.getElementById('login-form');
     const loginBtn = document.getElementById('login-btn');
     const errorBox = document.getElementById('login-error');
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault(); // Prevent page reload
+      e.preventDefault();
 
-      // Disable button while processing
       loginBtn.disabled = true;
       loginBtn.textContent = 'Signing in…';
       errorBox.style.display = 'none';
@@ -230,20 +211,17 @@
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      // Attempt sign-in with Supabase
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await sb.auth.signInWithPassword({
         email: email,
         password: password,
       });
 
       if (error) {
-        // Show the error to the user
         errorBox.textContent = 'Invalid email or password. Please try again.';
         errorBox.style.display = 'block';
         loginBtn.disabled = false;
         loginBtn.textContent = 'Sign In';
       } else {
-        // Success! Redirect to the investor dashboard
         window.location.href = 'dashboard.html';
       }
     });
