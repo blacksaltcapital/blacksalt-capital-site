@@ -93,25 +93,13 @@
       font-size: 1.1rem;
       font-weight: 700;
       letter-spacing: -0.02em;
-      margin: 0 0 1rem;
+      margin: 0 0 0.25rem;
     }
 
     .section-subtitle {
       color: var(--muted);
       font-size: 0.85rem;
-      margin: -0.5rem 0 1rem;
-    }
-
-    .folder-title {
-      font-size: 0.92rem;
-      font-weight: 600;
-      color: var(--accent);
-      letter-spacing: 0.02em;
-      margin: 1.5rem 0 0.75rem;
-    }
-
-    .folder-title:first-of-type {
-      margin-top: 0;
+      margin: 0 0 1rem;
     }
 
     .doc-section {
@@ -123,6 +111,95 @@
       gap: 0.5rem;
     }
 
+    /* Folder row — clickable */
+    .folder-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--line);
+      border-radius: 0.75rem;
+      background: var(--panel);
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .folder-row:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .folder-icon {
+      flex-shrink: 0;
+      width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 0.5rem;
+      background: rgba(147, 167, 199, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .folder-icon svg {
+      width: 1.1rem;
+      height: 1.1rem;
+      fill: var(--accent);
+    }
+
+    .folder-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .folder-arrow {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    /* Back button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+      margin-bottom: 1rem;
+      transition: color 0.2s ease;
+    }
+
+    .back-btn:hover {
+      color: var(--text);
+    }
+
+    .back-btn svg {
+      width: 0.85rem;
+      height: 0.85rem;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-bottom: 1rem;
+    }
+
+    .breadcrumb span {
+      color: var(--text);
+    }
+
+    /* File rows */
     .doc-row {
       display: flex;
       align-items: center;
@@ -276,7 +353,7 @@
         </div>
 
         <!-- SHARED DOCUMENTS -->
-        <div class="doc-section">
+        <div class="doc-section" id="shared-section">
           <h2 class="section-title">Quarterly Letters & Updates</h2>
           <p class="section-subtitle">Available to all partners</p>
           <div id="shared-doc-list">
@@ -289,7 +366,7 @@
         <hr class="section-divider" />
 
         <!-- PRIVATE DOCUMENTS -->
-        <div class="doc-section">
+        <div class="doc-section" id="private-section">
           <h2 class="section-title">Your Personal Documents</h2>
           <p class="section-subtitle">K-1s, unit ownership, and personal statements</p>
           <div id="private-doc-list">
@@ -322,24 +399,10 @@
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-    // Helper: create a document row
-    function createDocRow(fileName, url, dateStr) {
-      const row = document.createElement('div');
-      row.className = 'doc-row';
-      row.innerHTML = `
-        <div class="doc-info">
-          <div class="doc-icon">
-            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          </div>
-          <div>
-            <div class="doc-name">${fileName}</div>
-            ${dateStr ? `<div class="doc-date">${dateStr}</div>` : ''}
-          </div>
-        </div>
-        <a class="doc-download" href="${url}" target="_blank" rel="noopener">Download</a>
-      `;
-      return row;
-    }
+    // SVG icons
+    const folderSVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 0 1 2-2h5l2 2h9a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/></svg>`;
+    const fileSVG = `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`;
+    const backArrowSVG = `<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>`;
 
     function formatDate(d) {
       if (!d) return '';
@@ -349,95 +412,103 @@
     }
 
     // ============================================================
-    // Load files from a folder, recursing into subfolders.
-    // If subfolders exist, each subfolder gets its own heading.
-    // If no subfolders, files are listed flat.
+    // Render a folder view: shows folders as clickable tiles,
+    // files as download rows. Clicking a folder drills in.
     // ============================================================
-    async function loadFilesRecursive(basePath, containerEl, loadingEl) {
-      let totalFiles = 0;
+    async function renderFolder(basePath, containerEl, sectionLabel) {
+      containerEl.innerHTML = '';
 
-      try {
-        // List everything at the top level of this path
-        const { data: items, error } = await sb
-          .storage
-          .from('statements')
-          .list(basePath, { limit: 200, sortBy: { column: 'name', order: 'asc' } });
+      // If we're inside a subfolder, show a back button
+      const parts = basePath.split('/');
+      const rootPath = parts[0]; // "shared" or the user UID
+      const isSubfolder = parts.length > 1;
 
-        loadingEl.remove();
+      if (isSubfolder) {
+        const parentPath = parts.slice(0, -1).join('/');
+        const currentFolder = parts[parts.length - 1];
 
-        if (error || !items || items.length === 0) {
-          containerEl.innerHTML = `
-            <div class="empty-state">No documents available yet.</div>`;
-          return 0;
-        }
+        const backBtn = document.createElement('button');
+        backBtn.className = 'back-btn';
+        backBtn.innerHTML = `${backArrowSVG} Back`;
+        backBtn.addEventListener('click', () => renderFolder(parentPath, containerEl, sectionLabel));
+        containerEl.appendChild(backBtn);
 
-        // Separate folders from files
-        // Supabase storage: folders have id=null, files have id set
-        const folders = items.filter(i => i.id === null && i.name && !i.name.startsWith('.'));
-        const files = items.filter(i => i.id !== null && i.name && !i.name.startsWith('.'));
-
-        // If there are top-level files (no subfolder), show them
-        if (files.length > 0) {
-          const list = document.createElement('div');
-          list.className = 'doc-list';
-          for (const file of files) {
-            const { data: urlData } = await sb
-              .storage
-              .from('statements')
-              .createSignedUrl(`${basePath}/${file.name}`, 3600);
-            const url = urlData?.signedUrl || '#';
-            list.appendChild(createDocRow(file.name, url, formatDate(file.updated_at)));
-          }
-          containerEl.appendChild(list);
-          totalFiles += files.length;
-        }
-
-        // For each subfolder, create a heading and list its files
-        for (const folder of folders) {
-          const subPath = `${basePath}/${folder.name}`;
-
-          const { data: subItems, error: subErr } = await sb
-            .storage
-            .from('statements')
-            .list(subPath, { limit: 200, sortBy: { column: 'name', order: 'desc' } });
-
-          const subFiles = (subItems || []).filter(f => f.id !== null && f.name && !f.name.startsWith('.'));
-
-          if (subFiles.length === 0) continue;
-
-          // Subfolder heading
-          const heading = document.createElement('div');
-          heading.className = 'folder-title';
-          heading.textContent = folder.name;
-          containerEl.appendChild(heading);
-
-          // Files in this subfolder
-          const list = document.createElement('div');
-          list.className = 'doc-list';
-          for (const file of subFiles) {
-            const { data: urlData } = await sb
-              .storage
-              .from('statements')
-              .createSignedUrl(`${subPath}/${file.name}`, 3600);
-            const url = urlData?.signedUrl || '#';
-            list.appendChild(createDocRow(file.name, url, formatDate(file.updated_at)));
-          }
-          containerEl.appendChild(list);
-          totalFiles += subFiles.length;
-        }
-
-        if (totalFiles === 0) {
-          containerEl.innerHTML = `
-            <div class="empty-state">No documents available yet.</div>`;
-        }
-
-      } catch (e) {
-        loadingEl.remove();
-        containerEl.innerHTML = `
-          <div class="empty-state">Unable to load documents. Please try again later.</div>`;
+        // Breadcrumb
+        const crumb = document.createElement('div');
+        crumb.className = 'breadcrumb';
+        crumb.innerHTML = `${sectionLabel} / <span>${currentFolder}</span>`;
+        containerEl.appendChild(crumb);
       }
 
-      return totalFiles;
+      // Fetch items at this path
+      const { data: items, error } = await sb
+        .storage
+        .from('statements')
+        .list(basePath, { limit: 200, sortBy: { column: 'name', order: 'asc' } });
+
+      if (error || !items || items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = 'No documents available yet.';
+        containerEl.appendChild(empty);
+        return 0;
+      }
+
+      const folders = items.filter(i => i.id === null && i.name && !i.name.startsWith('.'));
+      const files = items.filter(i => i.id !== null && i.name && !i.name.startsWith('.'));
+
+      const list = document.createElement('div');
+      list.className = 'doc-list';
+
+      // Render folders as clickable tiles
+      for (const folder of folders) {
+        const row = document.createElement('div');
+        row.className = 'folder-row';
+        row.innerHTML = `
+          <div class="folder-icon">${folderSVG}</div>
+          <div class="folder-name">${folder.name}</div>
+          <div class="folder-arrow">›</div>
+        `;
+        row.addEventListener('click', () => {
+          renderFolder(`${basePath}/${folder.name}`, containerEl, sectionLabel);
+        });
+        list.appendChild(row);
+      }
+
+      // Render files as download rows
+      for (const file of files) {
+        const { data: urlData } = await sb
+          .storage
+          .from('statements')
+          .createSignedUrl(`${basePath}/${file.name}`, 3600);
+
+        const url = urlData?.signedUrl || '#';
+
+        const row = document.createElement('div');
+        row.className = 'doc-row';
+        row.innerHTML = `
+          <div class="doc-info">
+            <div class="doc-icon">${fileSVG}</div>
+            <div>
+              <div class="doc-name">${file.name}</div>
+              ${file.updated_at ? `<div class="doc-date">${formatDate(file.updated_at)}</div>` : ''}
+            </div>
+          </div>
+          <a class="doc-download" href="${url}" target="_blank" rel="noopener">Download</a>
+        `;
+        list.appendChild(row);
+      }
+
+      containerEl.appendChild(list);
+
+      if (folders.length === 0 && files.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = 'This folder is empty.';
+        containerEl.appendChild(empty);
+      }
+
+      return files.length;
     }
 
     // ============================================================
@@ -469,21 +540,25 @@
         }
       } catch (e) {}
 
-      // Load shared documents (with subfolder support)
-      const sharedCount = await loadFilesRecursive(
+      // Remove loading indicators
+      const sl = document.getElementById('shared-loading');
+      const pl = document.getElementById('private-loading');
+      if (sl) sl.remove();
+      if (pl) pl.remove();
+
+      // Render shared folder (clickable navigation)
+      await renderFolder(
         'shared',
         document.getElementById('shared-doc-list'),
-        document.getElementById('shared-loading')
+        'Shared'
       );
 
-      // Load private documents (with subfolder support)
-      const privateCount = await loadFilesRecursive(
+      // Render private folder (clickable navigation)
+      await renderFolder(
         user.id,
         document.getElementById('private-doc-list'),
-        document.getElementById('private-loading')
+        'Personal'
       );
-
-      document.getElementById('card-doc-count').textContent = String(sharedCount + privateCount);
     })();
 
     document.getElementById('logout-btn').addEventListener('click', async () => {
