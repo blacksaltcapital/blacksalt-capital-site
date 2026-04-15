@@ -10,7 +10,6 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Supabase JS -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -95,6 +94,16 @@
       font-weight: 700;
       letter-spacing: -0.02em;
       margin: 0 0 1rem;
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin: -0.5rem 0 1rem;
+    }
+
+    .doc-section {
+      margin-bottom: 3rem;
     }
 
     .doc-list {
@@ -195,6 +204,12 @@
       50% { opacity: 1; }
     }
 
+    .section-divider {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 0 0 2.5rem;
+    }
+
     @media (max-width: 760px) {
       .dash-header {
         flex-direction: column;
@@ -248,12 +263,30 @@
           </div>
         </div>
 
-        <h2 class="section-title">Your Statements & Documents</h2>
-        <div id="doc-list" class="doc-list">
-          <div class="loading-state" id="loading">
-            <span class="loading-dot">Loading your documents…</span>
+        <!-- SHARED DOCUMENTS: Quarterly letters, updates, etc. -->
+        <div class="doc-section">
+          <h2 class="section-title">Quarterly Letters & Updates</h2>
+          <p class="section-subtitle">Available to all partners</p>
+          <div id="shared-doc-list" class="doc-list">
+            <div class="loading-state" id="shared-loading">
+              <span class="loading-dot">Loading…</span>
+            </div>
           </div>
         </div>
+
+        <hr class="section-divider" />
+
+        <!-- PRIVATE DOCUMENTS: K-1s, unit ownership, personal statements -->
+        <div class="doc-section">
+          <h2 class="section-title">Your Personal Documents</h2>
+          <p class="section-subtitle">K-1s, unit ownership, and personal statements</p>
+          <div id="private-doc-list" class="doc-list">
+            <div class="loading-state" id="private-loading">
+              <span class="loading-dot">Loading…</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   </main>
@@ -267,16 +300,92 @@
 
   <script>
     // ============================================================
-    // SETUP: Replace these two values with YOUR Supabase credentials.
+    // SETUP: Replace with YOUR Supabase credentials.
     // ============================================================
-    const SUPABASE_URL = 'https://hqhomownlrjczlxalkpc.supabase.co';   // <-- Replace this
-    const SUPABASE_KEY = 'sb_publishable_n-pqJPmUR04xTkI1-TC-rw_9LIFslUm';              // <-- Replace this
+    const SUPABASE_URL = 'https://hqhomownlrjczlxalkpc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_n-pqJPmUR04xTkI1-TC-rw_9LIFslUm';  // <-- Paste your publishable key
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+    // Helper: create a document row element
+    function createDocRow(fileName, url, dateStr) {
+      const row = document.createElement('div');
+      row.className = 'doc-row';
+      row.innerHTML = `
+        <div class="doc-info">
+          <div class="doc-icon">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div>
+            <div class="doc-name">${fileName}</div>
+            ${dateStr ? `<div class="doc-date">${dateStr}</div>` : ''}
+          </div>
+        </div>
+        <a class="doc-download" href="${url}" target="_blank" rel="noopener">Download</a>
+      `;
+      return row;
+    }
+
+    // Helper: format a date string
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric'
+      });
+    }
+
+    // Helper: load files from a folder and display them
+    async function loadFiles(folderPath, listEl, loadingEl) {
+      try {
+        const { data: files, error } = await sb
+          .storage
+          .from('statements')
+          .list(folderPath, {
+            limit: 100,
+            sortBy: { column: 'name', order: 'desc' },
+          });
+
+        loadingEl.remove();
+
+        const realFiles = (files || []).filter(f => f.name && !f.name.startsWith('.'));
+
+        if (error || realFiles.length === 0) {
+          listEl.innerHTML = `
+            <div class="empty-state">
+              No documents available yet.
+            </div>`;
+          return 0;
+        }
+
+        for (const file of realFiles) {
+          const { data: urlData } = await sb
+            .storage
+            .from('statements')
+            .createSignedUrl(`${folderPath}/${file.name}`, 3600);
+
+          const url = urlData?.signedUrl || '#';
+          const row = createDocRow(file.name, url, formatDate(file.updated_at));
+          listEl.appendChild(row);
+        }
+
+        return realFiles.length;
+
+      } catch (e) {
+        loadingEl.remove();
+        listEl.innerHTML = `
+          <div class="empty-state">
+            Unable to load documents. Please try again later.
+          </div>`;
+        return 0;
+      }
+    }
+
+    // ============================================================
+    // MAIN: Check auth, then load both shared and private docs.
+    // ============================================================
     (async function init() {
       const { data: { session } } = await sb.auth.getSession();
 
@@ -290,7 +399,7 @@
 
       document.getElementById('welcome-text').textContent = `Signed in as ${email}`;
 
-      // Load investor info (optional — works without the investors table)
+      // Load investor info (optional)
       try {
         const { data: investor, error } = await sb
           .from('investors')
@@ -305,77 +414,25 @@
         }
       } catch (e) {}
 
-      // Load documents from PRIVATE storage bucket
-      const docListEl = document.getElementById('doc-list');
-      const loadingEl = document.getElementById('loading');
+      // Load SHARED documents (quarterly letters, updates)
+      const sharedCount = await loadFiles(
+        'shared',
+        document.getElementById('shared-doc-list'),
+        document.getElementById('shared-loading')
+      );
 
-      try {
-        const folderPath = user.id;
+      // Load PRIVATE documents (K-1s, unit ownership, personal statements)
+      const privateCount = await loadFiles(
+        user.id,
+        document.getElementById('private-doc-list'),
+        document.getElementById('private-loading')
+      );
 
-        const { data: files, error: listError } = await sb
-          .storage
-          .from('statements')
-          .list(folderPath, {
-            limit: 100,
-            sortBy: { column: 'name', order: 'desc' },
-          });
-
-        loadingEl.remove();
-
-        if (listError || !files || files.length === 0) {
-          docListEl.innerHTML = `
-            <div class="empty-state">
-              No documents available yet. Check back soon or contact
-              <a href="mailto:eli@blacksaltcapitallp.com" style="color:var(--accent);">eli@blacksaltcapitallp.com</a>
-            </div>`;
-          document.getElementById('card-doc-count').textContent = '0';
-          return;
-        }
-
-        const realFiles = files.filter(f => f.name && !f.name.startsWith('.'));
-        document.getElementById('card-doc-count').textContent = String(realFiles.length);
-
-        for (const file of realFiles) {
-          // PRIVATE signed URL — expires after 1 hour
-          const { data: urlData } = await sb
-            .storage
-            .from('statements')
-            .createSignedUrl(`${folderPath}/${file.name}`, 3600);
-
-          const url = urlData?.signedUrl || '#';
-
-          const dateStr = file.updated_at
-            ? new Date(file.updated_at).toLocaleDateString('en-US', {
-                year: 'numeric', month: 'short', day: 'numeric'
-              })
-            : '';
-
-          const row = document.createElement('div');
-          row.className = 'doc-row';
-          row.innerHTML = `
-            <div class="doc-info">
-              <div class="doc-icon">
-                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              </div>
-              <div>
-                <div class="doc-name">${file.name}</div>
-                ${dateStr ? `<div class="doc-date">${dateStr}</div>` : ''}
-              </div>
-            </div>
-            <a class="doc-download" href="${url}" target="_blank" rel="noopener">Download</a>
-          `;
-          docListEl.appendChild(row);
-        }
-
-      } catch (e) {
-        loadingEl.remove();
-        docListEl.innerHTML = `
-          <div class="empty-state">
-            Unable to load documents. Please try again later.
-          </div>`;
-      }
+      // Update total doc count
+      document.getElementById('card-doc-count').textContent = String(sharedCount + privateCount);
     })();
 
+    // Sign out
     document.getElementById('logout-btn').addEventListener('click', async () => {
       await sb.auth.signOut();
       window.location.href = 'login.html';
