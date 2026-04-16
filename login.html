@@ -79,6 +79,28 @@
       border-color: var(--accent);
     }
 
+    .password-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+    }
+
+    .password-row label {
+      margin-bottom: 0;
+    }
+
+    .forgot-link {
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .forgot-link:hover {
+      color: var(--text);
+    }
+
     .login-btn {
       width: 100%;
       padding: 0.8rem;
@@ -114,6 +136,17 @@
       display: none;
     }
 
+    .login-success {
+      margin-top: 1rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 0.5rem;
+      background: rgba(80, 180, 80, 0.12);
+      border: 1px solid rgba(80, 180, 80, 0.25);
+      color: #6fcf6f;
+      font-size: 0.85rem;
+      display: none;
+    }
+
     .login-footer {
       margin-top: 1.5rem;
       text-align: center;
@@ -126,6 +159,10 @@
       text-decoration: underline;
       text-underline-offset: 2px;
     }
+
+    /* Forgot password form (hidden by default) */
+    .forgot-form { display: none; }
+    .login-form-wrap { display: block; }
   </style>
 </head>
 <body>
@@ -144,22 +181,50 @@
   <main>
     <section class="login-page">
       <div class="login-card">
-        <h1>Investor Portal</h1>
-        <p class="subtitle">Sign in to access your statements and documents.</p>
 
-        <form id="login-form">
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" placeholder="you@example.com" required autocomplete="email" />
-          </div>
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Your password" required autocomplete="current-password" />
-          </div>
-          <button type="submit" class="login-btn" id="login-btn">Sign In</button>
-        </form>
+        <!-- LOGIN FORM -->
+        <div id="login-form-wrap" class="login-form-wrap">
+          <h1>Investor Portal</h1>
+          <p class="subtitle">Sign in to access your statements and documents.</p>
 
-        <div class="login-error" id="login-error"></div>
+          <form id="login-form">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <div class="password-row">
+                <label for="password">Password</label>
+                <a href="#" class="forgot-link" id="show-forgot">Forgot password?</a>
+              </div>
+              <input type="password" id="password" placeholder="Your password" required autocomplete="current-password" />
+            </div>
+            <button type="submit" class="login-btn" id="login-btn">Sign In</button>
+          </form>
+
+          <div class="login-error" id="login-error"></div>
+        </div>
+
+        <!-- FORGOT PASSWORD FORM -->
+        <div id="forgot-form-wrap" class="forgot-form">
+          <h1>Reset Password</h1>
+          <p class="subtitle">Enter your email and we'll send you a reset link.</p>
+
+          <form id="forgot-form">
+            <div class="form-group">
+              <label for="forgot-email">Email</label>
+              <input type="email" id="forgot-email" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+            <button type="submit" class="login-btn" id="forgot-btn">Send Reset Link</button>
+          </form>
+
+          <div class="login-error" id="forgot-error"></div>
+          <div class="login-success" id="forgot-success"></div>
+
+          <div class="login-footer" style="margin-top: 1.25rem;">
+            <a href="#" id="show-login">← Back to sign in</a>
+          </div>
+        </div>
 
         <div class="login-footer">
           Need access? Contact <a href="mailto:eli@blacksaltcapitallp.com">eli@blacksaltcapitallp.com</a>
@@ -176,54 +241,88 @@
   </footer>
 
   <script>
-    // ============================================================
-    // SETUP: Replace these two values with YOUR Supabase credentials.
-    // ============================================================
     const SUPABASE_URL = 'https://hqhomownlrjczlxalkpc.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_n-pqJPmUR04xTkI1-TC-rw_9LIFslUm';  // <-- Paste your publishable key here
+    const SUPABASE_KEY = 'sb_publishable_n-pqJPmUR04xTkI1-TC-rw_9LIFslUm';  // <-- Paste your publishable key
 
-    // Use "sb" instead of "supabase" to avoid conflict with the library
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-    // If already logged in, go straight to dashboard
+    // If already logged in, go to dashboard
     (async function checkSession() {
       const { data: { session } } = await sb.auth.getSession();
-      if (session) {
-        window.location.href = 'dashboard.html';
-      }
+      if (session) window.location.href = 'dashboard.html';
     })();
 
-    // Handle login form
-    const form = document.getElementById('login-form');
-    const loginBtn = document.getElementById('login-btn');
-    const errorBox = document.getElementById('login-error');
-
-    form.addEventListener('submit', async (e) => {
+    // Toggle between login and forgot password forms
+    document.getElementById('show-forgot').addEventListener('click', (e) => {
       e.preventDefault();
+      document.getElementById('login-form-wrap').style.display = 'none';
+      document.getElementById('forgot-form-wrap').style.display = 'block';
+    });
 
+    document.getElementById('show-login').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('forgot-form-wrap').style.display = 'none';
+      document.getElementById('login-form-wrap').style.display = 'block';
+    });
+
+    // LOGIN
+    const loginForm = document.getElementById('login-form');
+    const loginBtn = document.getElementById('login-btn');
+    const loginError = document.getElementById('login-error');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
       loginBtn.disabled = true;
       loginBtn.textContent = 'Signing in…';
-      errorBox.style.display = 'none';
+      loginError.style.display = 'none';
 
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
-      const { data, error } = await sb.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
 
       if (error) {
-        errorBox.textContent = 'Invalid email or password. Please try again.';
-        errorBox.style.display = 'block';
+        loginError.textContent = 'Invalid email or password. Please try again.';
+        loginError.style.display = 'block';
         loginBtn.disabled = false;
         loginBtn.textContent = 'Sign In';
       } else {
         window.location.href = 'dashboard.html';
       }
+    });
+
+    // FORGOT PASSWORD
+    const forgotForm = document.getElementById('forgot-form');
+    const forgotBtn = document.getElementById('forgot-btn');
+    const forgotError = document.getElementById('forgot-error');
+    const forgotSuccess = document.getElementById('forgot-success');
+
+    forgotForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      forgotBtn.disabled = true;
+      forgotBtn.textContent = 'Sending…';
+      forgotError.style.display = 'none';
+      forgotSuccess.style.display = 'none';
+
+      const email = document.getElementById('forgot-email').value.trim();
+
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://blacksaltcapitallp.com/reset-password',
+      });
+
+      if (error) {
+        forgotError.textContent = 'Something went wrong. Please try again.';
+        forgotError.style.display = 'block';
+      } else {
+        forgotSuccess.textContent = 'Check your email for a password reset link.';
+        forgotSuccess.style.display = 'block';
+      }
+
+      forgotBtn.disabled = false;
+      forgotBtn.textContent = 'Send Reset Link';
     });
   </script>
 </body>
