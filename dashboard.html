@@ -411,6 +411,14 @@
       });
     }
 
+    // Escape any user/storage-provided string before injecting into HTML.
+    // Prevents XSS if a file/folder name contains HTML or script tags.
+    function escapeHTML(str) {
+      const d = document.createElement('div');
+      d.textContent = str == null ? '' : String(str);
+      return d.innerHTML;
+    }
+
     // ============================================================
     // Render a folder view: shows folders as clickable tiles,
     // files as download rows. Clicking a folder drills in.
@@ -436,7 +444,7 @@
         // Breadcrumb
         const crumb = document.createElement('div');
         crumb.className = 'breadcrumb';
-        crumb.innerHTML = `${sectionLabel} / <span>${currentFolder}</span>`;
+        crumb.innerHTML = `${escapeHTML(sectionLabel)} / <span>${escapeHTML(currentFolder)}</span>`;
         containerEl.appendChild(crumb);
       }
 
@@ -466,7 +474,7 @@
         row.className = 'folder-row';
         row.innerHTML = `
           <div class="folder-icon">${folderSVG}</div>
-          <div class="folder-name">${folder.name}</div>
+          <div class="folder-name">${escapeHTML(folder.name)}</div>
           <div class="folder-arrow">›</div>
         `;
         row.addEventListener('click', () => {
@@ -490,11 +498,11 @@
           <div class="doc-info">
             <div class="doc-icon">${fileSVG}</div>
             <div>
-              <div class="doc-name">${file.name}</div>
-              ${file.updated_at ? `<div class="doc-date">${formatDate(file.updated_at)}</div>` : ''}
+              <div class="doc-name">${escapeHTML(file.name)}</div>
+              ${file.updated_at ? `<div class="doc-date">${escapeHTML(formatDate(file.updated_at))}</div>` : ''}
             </div>
           </div>
-          <a class="doc-download" href="${url}" target="_blank" rel="noopener">Download</a>
+          <a class="doc-download" href="${escapeHTML(url)}" target="_blank" rel="noopener">Download</a>
         `;
         list.appendChild(row);
       }
