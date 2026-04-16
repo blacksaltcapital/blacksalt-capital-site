@@ -511,6 +511,20 @@
       return files.length;
     }
 
+    async function countAllFiles(basePath) {
+      const { data: items } = await sb.storage.from('statements').list(basePath, { limit: 200 });
+      if (!items) return 0;
+      let count = 0;
+      for (const item of items) {
+        if (item.id === null && !item.name.startsWith('.')) {
+          count += await countAllFiles(`${basePath}/${item.name}`);
+        } else if (item.id !== null && !item.name.startsWith('.')) {
+          count++;
+        }
+      }
+      return count;
+    }
+
     // ============================================================
     // MAIN
     // ============================================================
@@ -559,6 +573,10 @@
         document.getElementById('private-doc-list'),
         'Personal'
       );
+
+      // Count all files across subfolders and update the documents card
+      const totalDocs = await countAllFiles(user.id);
+      document.getElementById('card-doc-count').textContent = totalDocs;
     })();
 
     document.getElementById('logout-btn').addEventListener('click', async () => {
