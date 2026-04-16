@@ -347,8 +347,8 @@
             <div class="card-value" id="card-since">—</div>
           </div>
           <div class="info-card">
-            <span class="card-label">Documents</span>
-            <div class="card-value" id="card-doc-count">—</div>
+            <span class="card-label">Units Owned</span>
+            <div class="card-value" id="card-units">—</div>
           </div>
         </div>
 
@@ -511,18 +511,10 @@
       return files.length;
     }
 
-    async function countAllFiles(basePath) {
-      const { data: items } = await sb.storage.from('statements').list(basePath, { limit: 200 });
-      if (!items) return 0;
-      let count = 0;
-      for (const item of items) {
-        if (item.id === null && !item.name.startsWith('.')) {
-          count += await countAllFiles(`${basePath}/${item.name}`);
-        } else if (item.id !== null && !item.name.startsWith('.')) {
-          count++;
-        }
-      }
-      return count;
+    async function countAllFiles_UNUSED(basePath) {
+      // This function is no longer needed since we switched from
+      // document count to units owned. Left here as a stub for reference.
+      return 0;
     }
 
     // ============================================================
@@ -551,6 +543,12 @@
           document.getElementById('info-cards').style.display = '';
           document.getElementById('card-name').textContent = investor.full_name || user.email;
           document.getElementById('card-since').textContent = investor.member_since || '—';
+
+          // Format units_owned with commas (e.g., 6,774.32)
+          const units = investor.units_owned;
+          document.getElementById('card-units').textContent = (units != null)
+            ? Number(units).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            : '—';
         }
       } catch (e) {}
 
@@ -573,10 +571,6 @@
         document.getElementById('private-doc-list'),
         'Personal'
       );
-
-      // Count all files across subfolders and update the documents card
-      const totalDocs = await countAllFiles(user.id);
-      document.getElementById('card-doc-count').textContent = totalDocs;
     })();
 
     document.getElementById('logout-btn').addEventListener('click', async () => {
