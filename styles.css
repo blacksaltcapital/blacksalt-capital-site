@@ -117,20 +117,18 @@ a {
 }
 
 .hero-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 4rem;
-  align-items: end;
+  position: relative;
   padding: 5rem 0 7rem;
 }
 
-.hero-copy {
-  min-width: 0;
-}
-
 .hero-aside {
+  position: absolute;
+  top: 5.5rem;
+  right: -1rem;
+  width: 290px;
   display: flex;
   justify-content: flex-end;
+  z-index: 2;
 }
 
 .hero-note {
@@ -365,22 +363,16 @@ h1 {
 }
 
 @media (max-width: 980px) {
-  .hero-layout,
   .section-grid {
     grid-template-columns: 1fr;
   }
 
-  .hero-layout {
-    gap: 2rem;
-    align-items: start;
-  }
-
   .hero-aside {
-    justify-content: flex-start;
-  }
-
-  .hero-note {
+    position: static;
+    width: 100%;
     max-width: 32rem;
+    justify-content: flex-start;
+    margin-top: 2.5rem;
   }
 }
 
