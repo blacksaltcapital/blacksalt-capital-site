@@ -12,158 +12,9 @@
   <link rel="stylesheet" href="styles.css" />
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
 
-  <style>
-    .login-page {
-      min-height: calc(100vh - 5.75rem);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 0;
-    }
 
-    .login-card {
-      width: 100%;
-      max-width: 400px;
-      padding: 2.5rem 2rem 2rem;
-      border: 1px solid var(--line);
-      border-radius: 1rem;
-      background: var(--panel);
-    }
-
-    .login-card h1 {
-      font-size: 1.5rem;
-      letter-spacing: -0.03em;
-      line-height: 1.2;
-      margin: 0 0 0.5rem;
-      max-width: 100%;
-    }
-
-    .login-card .subtitle {
-      color: var(--muted);
-      font-size: 0.92rem;
-      margin: 0 0 2rem;
-    }
-
-    .form-group {
-      margin-bottom: 1.25rem;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 0.4rem;
-      letter-spacing: 0.02em;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 0.75rem 0.9rem;
-      border: 1px solid var(--line);
-      border-radius: 0.5rem;
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-
-    .form-group input::placeholder {
-      color: rgba(166, 175, 187, 0.5);
-    }
-
-    .form-group input:focus {
-      border-color: var(--accent);
-    }
-
-    .password-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.4rem;
-    }
-
-    .password-row label {
-      margin-bottom: 0;
-    }
-
-    .forgot-link {
-      font-size: 0.78rem;
-      color: var(--accent);
-      text-decoration: none;
-      transition: color 0.2s ease;
-    }
-
-    .forgot-link:hover {
-      color: var(--text);
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 0.5rem;
-      background: var(--accent);
-      color: var(--bg);
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.2s ease;
-      margin-top: 0.5rem;
-    }
-
-    .login-btn:hover {
-      opacity: 0.88;
-    }
-
-    .login-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .login-error {
-      margin-top: 1rem;
-      padding: 0.7rem 0.9rem;
-      border-radius: 0.5rem;
-      background: rgba(220, 80, 80, 0.12);
-      border: 1px solid rgba(220, 80, 80, 0.25);
-      color: #e87171;
-      font-size: 0.85rem;
-      display: none;
-    }
-
-    .login-success {
-      margin-top: 1rem;
-      padding: 0.7rem 0.9rem;
-      border-radius: 0.5rem;
-      background: rgba(80, 180, 80, 0.12);
-      border: 1px solid rgba(80, 180, 80, 0.25);
-      color: #6fcf6f;
-      font-size: 0.85rem;
-      display: none;
-    }
-
-    .login-footer {
-      margin-top: 1.5rem;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
-
-    .login-footer a {
-      color: var(--accent);
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
-    /* Forgot password form (hidden by default) */
-    .forgot-form { display: none; }
-    .login-form-wrap { display: block; }
-  </style>
 </head>
 <body>
 
@@ -179,8 +30,8 @@
   </header>
 
   <main>
-    <section class="login-page">
-      <div class="login-card">
+    <section class="auth-page">
+      <div class="auth-card">
 
         <!-- LOGIN FORM -->
         <div id="login-form-wrap" class="login-form-wrap">
@@ -197,12 +48,15 @@
                 <label for="password">Password</label>
                 <a href="#" class="forgot-link" id="show-forgot">Forgot password?</a>
               </div>
-              <input type="password" id="password" placeholder="Your password" required autocomplete="current-password" />
+              <div class="input-wrap">
+                <input type="password" id="password" placeholder="Your password" required autocomplete="current-password" />
+                <button type="button" class="pw-toggle" aria-label="Show password" data-target="password">Show</button>
+              </div>
             </div>
-            <button type="submit" class="login-btn" id="login-btn">Sign In</button>
+            <button type="submit" class="auth-btn" id="login-btn">Sign In</button>
           </form>
 
-          <div class="login-error" id="login-error"></div>
+          <div class="auth-error" id="login-error"></div>
         </div>
 
         <!-- FORGOT PASSWORD FORM -->
@@ -215,18 +69,18 @@
               <label for="forgot-email">Email</label>
               <input type="email" id="forgot-email" placeholder="you@example.com" required autocomplete="email" />
             </div>
-            <button type="submit" class="login-btn" id="forgot-btn">Send Reset Link</button>
+            <button type="submit" class="auth-btn" id="forgot-btn">Send Reset Link</button>
           </form>
 
-          <div class="login-error" id="forgot-error"></div>
-          <div class="login-success" id="forgot-success"></div>
+          <div class="auth-error" id="forgot-error"></div>
+          <div class="auth-success" id="forgot-success"></div>
 
-          <div class="login-footer" style="margin-top: 1.25rem;">
+          <div class="auth-footer" style="margin-top: 1.25rem;">
             <a href="#" id="show-login">← Back to sign in</a>
           </div>
         </div>
 
-        <div class="login-footer">
+        <div class="auth-footer">
           Need access? Contact <a href="mailto:eli@blacksaltcapitallp.com">eli@blacksaltcapitallp.com</a>
         </div>
       </div>
@@ -241,11 +95,6 @@
   </footer>
 
   <script>
-    const SUPABASE_URL = 'https://hqhomownlrjczlxalkpc.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_n-pqJPmUR04xTkI1-TC-rw_9LIFslUm';  // <-- Paste your publishable key
-
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     const yearEl = document.getElementById('year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
 
@@ -254,6 +103,17 @@
       const { data: { session } } = await sb.auth.getSession();
       if (session) window.location.href = 'dashboard.html';
     })();
+
+    // Password visibility toggles
+    document.querySelectorAll('.pw-toggle').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.target);
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.textContent = show ? 'Hide' : 'Show';
+        btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      });
+    });
 
     // Toggle between login and forgot password forms
     document.getElementById('show-forgot').addEventListener('click', (e) => {
