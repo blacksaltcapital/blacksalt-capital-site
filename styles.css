@@ -222,40 +222,49 @@ h1 {
   word-break: break-word;
 }
 
-/* Pull quote section between Strategy and About */
-.section-quote {
-  padding: 6rem 0;
+/* Hero pull quote — sits in the upper-right corner of the hero */
+.hero-container {
+  position: relative;
+}
+
+.hero-quote {
+  position: absolute;
+  top: 5rem;
+  right: 0;
+  max-width: 280px;
+  text-align: right;
 }
 
 .pull-quote {
-  margin: 0 auto;
-  max-width: 880px;
-  text-align: center;
+  margin: 0;
 }
 
 .pull-quote p {
-  margin: 0 0 1.4rem;
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  margin: 0 0 0.9rem;
+  font-size: 1.05rem;
   font-style: italic;
   font-weight: 400;
-  line-height: 1.35;
-  letter-spacing: -0.02em;
-  color: var(--text);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--muted);
 }
 
 .pull-quote cite {
   display: block;
   font-style: normal;
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--accent);
 }
 
-@media (max-width: 760px) {
-  .section-quote {
-    padding: 3.5rem 0;
+@media (max-width: 980px) {
+  .hero-quote {
+    position: static;
+    max-width: 100%;
+    text-align: left;
+    margin-top: 2.5rem;
   }
 }
 
