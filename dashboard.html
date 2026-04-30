@@ -141,12 +141,16 @@
     // Render a folder view: shows folders as clickable tiles,
     // files as download rows. Clicking a folder drills in.
     // ============================================================
-    async function renderFolder(basePath, containerEl, sectionLabel) {
+    async function renderFolder(basePath, containerEl, sectionLabel, emptyMessage = 'No documents available yet.', searchEl = null, wrapEl = null) {
       containerEl.innerHTML = '';
 
-      // If we're inside a subfolder, show a back button
+      // Clear and reset search input on each navigation
+      if (searchEl) {
+        searchEl.value = '';
+        if (wrapEl) wrapEl.style.display = 'none';
+      }
+
       const parts = basePath.split('/');
-      const rootPath = parts[0]; // "shared" or the user UID
       const isSubfolder = parts.length > 1;
 
       if (isSubfolder) {
@@ -156,10 +160,9 @@
         const backBtn = document.createElement('button');
         backBtn.className = 'back-btn';
         backBtn.innerHTML = `${backArrowSVG} Back`;
-        backBtn.addEventListener('click', () => renderFolder(parentPath, containerEl, sectionLabel));
+        backBtn.addEventListener('click', () => renderFolder(parentPath, containerEl, sectionLabel, emptyMessage, searchEl, wrapEl));
         containerEl.appendChild(backBtn);
 
-        // Breadcrumb
         const crumb = document.createElement('div');
         crumb.className = 'breadcrumb';
         crumb.innerHTML = `${escapeHTML(sectionLabel)} / <span>${escapeHTML(currentFolder)}</span>`;
@@ -175,7 +178,7 @@
       if (error || !items || items.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'empty-state';
-        empty.textContent = 'No documents available yet.';
+        empty.textContent = emptyMessage;
         containerEl.appendChild(empty);
         return 0;
       }
@@ -199,7 +202,7 @@
           <div class="folder-arrow">›</div>
         `;
         row.addEventListener('click', () => {
-          renderFolder(`${basePath}/${folder.name}`, containerEl, sectionLabel);
+          renderFolder(`${basePath}/${folder.name}`, containerEl, sectionLabel, emptyMessage, searchEl, wrapEl);
         });
         list.appendChild(row);
       }
@@ -251,8 +254,48 @@
       if (folders.length === 0 && files.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'empty-state';
-        empty.textContent = 'This folder is empty.';
+        empty.textContent = isSubfolder ? 'This folder is empty.' : emptyMessage;
         containerEl.appendChild(empty);
+      }
+
+      // Show search only inside subfolders with files
+      if (searchEl && wrapEl && isSubfolder && files.length > 0) {
+        wrapEl.style.display = '';
+
+        if (searchEl._filterHandler) {
+          searchEl.removeEventListener('input', searchEl._filterHandler);
+        }
+
+        searchEl._filterHandler = () => {
+          const q = searchEl.value.trim().toLowerCase();
+          const currentList = containerEl.querySelector('.doc-list');
+          if (!currentList) return;
+
+          const rows = currentList.querySelectorAll('.doc-row:not(.doc-row--skeleton)');
+          let visibleCount = 0;
+
+          rows.forEach(row => {
+            const nameEl = row.querySelector('.doc-name');
+            const text = (nameEl ? nameEl.textContent : '').toLowerCase();
+            const show = !q || text.includes(q);
+            row.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+          });
+
+          let emptyMsg = currentList.querySelector('.search-empty');
+          if (visibleCount === 0 && q) {
+            if (!emptyMsg) {
+              emptyMsg = document.createElement('div');
+              emptyMsg.className = 'empty-state search-empty';
+              currentList.appendChild(emptyMsg);
+            }
+            emptyMsg.textContent = `No results for "${searchEl.value.trim()}".`;
+          } else if (emptyMsg) {
+            emptyMsg.remove();
+          }
+        };
+
+        searchEl.addEventListener('input', searchEl._filterHandler);
       }
 
       return files.length;
@@ -312,72 +355,25 @@
       if (sl) sl.remove();
       if (pl) pl.remove();
 
-      // Wire up search/filter for a doc container.
-      // Shows the search input only when files are present at root level.
-      function wireSearch(searchEl, wrapEl, containerEl) {
-        if (!searchEl || !wrapEl || !containerEl) return;
-
-        // Show search input
-        wrapEl.style.display = '';
-
-        searchEl.addEventListener('input', () => {
-          const q = searchEl.value.trim().toLowerCase();
-          const list = containerEl.querySelector('.doc-list');
-          if (!list) return;
-
-          const rows = list.querySelectorAll('.doc-row:not(.doc-row--skeleton)');
-          let visibleCount = 0;
-
-          rows.forEach(row => {
-            const nameEl = row.querySelector('.doc-name');
-            const text = (nameEl ? nameEl.textContent : '').toLowerCase();
-            const show = !q || text.includes(q);
-            row.style.display = show ? '' : 'none';
-            if (show) visibleCount++;
-          });
-
-          // Show/hide empty state
-          let emptyMsg = list.querySelector('.search-empty');
-          if (visibleCount === 0 && q) {
-            if (!emptyMsg) {
-              emptyMsg = document.createElement('div');
-              emptyMsg.className = 'empty-state search-empty';
-              list.appendChild(emptyMsg);
-            }
-            emptyMsg.textContent = `No documents match "${searchEl.value.trim()}".`;
-          } else if (emptyMsg) {
-            emptyMsg.remove();
-          }
-        });
-      }
-
       // Render shared folder (clickable navigation)
-      const sharedCount = await renderFolder(
+      await renderFolder(
         'shared',
         document.getElementById('shared-doc-list'),
-        'Shared'
+        'Shared',
+        'No letters or reports have been published yet.',
+        document.getElementById('shared-search'),
+        document.getElementById('shared-search-wrap')
       );
-      if (sharedCount > 0) {
-        wireSearch(
-          document.getElementById('shared-search'),
-          document.getElementById('shared-search-wrap'),
-          document.getElementById('shared-doc-list')
-        );
-      }
 
       // Render private folder (clickable navigation)
-      const privateCount = await renderFolder(
+      await renderFolder(
         user.id,
         document.getElementById('private-doc-list'),
-        'Personal'
+        'Personal',
+        'Your personal documents — K-1s, statements, and ownership records — will appear here when available.',
+        document.getElementById('private-search'),
+        document.getElementById('private-search-wrap')
       );
-      if (privateCount > 0) {
-        wireSearch(
-          document.getElementById('private-search'),
-          document.getElementById('private-search-wrap'),
-          document.getElementById('private-doc-list')
-        );
-      }
     })();
 
     document.getElementById('logout-btn').addEventListener('click', async () => {
