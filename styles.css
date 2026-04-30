@@ -222,6 +222,43 @@ h1 {
   word-break: break-word;
 }
 
+/* Pull quote section between Strategy and About */
+.section-quote {
+  padding: 6rem 0;
+}
+
+.pull-quote {
+  margin: 0 auto;
+  max-width: 880px;
+  text-align: center;
+}
+
+.pull-quote p {
+  margin: 0 0 1.4rem;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.pull-quote cite {
+  display: block;
+  font-style: normal;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@media (max-width: 760px) {
+  .section-quote {
+    padding: 3.5rem 0;
+  }
+}
+
 /* Contact form */
 .form-group textarea {
   width: 100%;
