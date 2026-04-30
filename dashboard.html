@@ -60,8 +60,10 @@
           <h2 class="section-title">Letters & Quarterly Reports</h2>
           <p class="section-subtitle">Available to all partners</p>
           <div id="shared-doc-list">
-            <div class="loading-state" id="shared-loading">
-              <span class="loading-dot">Loading…</span>
+            <div class="doc-list" id="shared-loading">
+              <div class="doc-row doc-row--skeleton"><div class="doc-info"><div class="doc-icon skel-icon"></div><div class="doc-skel-text"><div class="skeleton skel-line skel-line--lg"></div><div class="skeleton skel-line skel-line--sm"></div></div></div><div class="skeleton skel-btn"></div></div>
+              <div class="doc-row doc-row--skeleton"><div class="doc-info"><div class="doc-icon skel-icon"></div><div class="doc-skel-text"><div class="skeleton skel-line skel-line--lg"></div><div class="skeleton skel-line skel-line--sm"></div></div></div><div class="skeleton skel-btn"></div></div>
+              <div class="doc-row doc-row--skeleton"><div class="doc-info"><div class="doc-icon skel-icon"></div><div class="doc-skel-text"><div class="skeleton skel-line skel-line--lg"></div><div class="skeleton skel-line skel-line--sm"></div></div></div><div class="skeleton skel-btn"></div></div>
             </div>
           </div>
         </div>
@@ -73,8 +75,9 @@
           <h2 class="section-title">Your Personal Documents</h2>
           <p class="section-subtitle">K-1s, unit ownership, and personal statements</p>
           <div id="private-doc-list">
-            <div class="loading-state" id="private-loading">
-              <span class="loading-dot">Loading…</span>
+            <div class="doc-list" id="private-loading">
+              <div class="doc-row doc-row--skeleton"><div class="doc-info"><div class="doc-icon skel-icon"></div><div class="doc-skel-text"><div class="skeleton skel-line skel-line--lg"></div><div class="skeleton skel-line skel-line--sm"></div></div></div><div class="skeleton skel-btn"></div></div>
+              <div class="doc-row doc-row--skeleton"><div class="doc-info"><div class="doc-icon skel-icon"></div><div class="doc-skel-text"><div class="skeleton skel-line skel-line--lg"></div><div class="skeleton skel-line skel-line--sm"></div></div></div><div class="skeleton skel-btn"></div></div>
             </div>
           </div>
         </div>
@@ -209,7 +212,7 @@
 
         const btn = row.querySelector('.doc-download');
         btn.addEventListener('click', async () => {
-          btn.textContent = '…';
+          btn.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span><span class="sr-only">Loading</span>';
           btn.disabled = true;
           const { data: urlData, error: urlError } = await sb
             .storage
