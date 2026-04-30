@@ -646,6 +646,21 @@ h1 {
   font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  min-height: 1.6rem;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.06) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 0.3rem;
+  color: transparent !important;
+  user-select: none;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .section-title {

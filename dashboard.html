@@ -40,18 +40,18 @@
           </div>
         </div>
 
-        <div class="info-cards" id="info-cards" style="display: none;">
+        <div class="info-cards" id="info-cards">
           <div class="info-card">
             <span class="card-label">Account</span>
-            <div class="card-value" id="card-name">—</div>
+            <div class="card-value skeleton" id="card-name"></div>
           </div>
           <div class="info-card">
             <span class="card-label">Member Since</span>
-            <div class="card-value" id="card-since">—</div>
+            <div class="card-value skeleton" id="card-since"></div>
           </div>
           <div class="info-card">
             <span class="card-label">Units Owned</span>
-            <div class="card-value" id="card-units">—</div>
+            <div class="card-value skeleton" id="card-units"></div>
           </div>
         </div>
 
@@ -263,18 +263,31 @@
           .eq('user_id', user.id)
           .single();
 
-        if (investor && !error) {
-          document.getElementById('info-cards').style.display = '';
-          document.getElementById('card-name').textContent = investor.full_name || user.email;
-          document.getElementById('card-since').textContent = investor.member_since || '—';
+        const cardName  = document.getElementById('card-name');
+        const cardSince = document.getElementById('card-since');
+        const cardUnits = document.getElementById('card-units');
 
-          // Format units_owned with commas (e.g., 6,774.32)
+        if (investor && !error) {
+          cardName.textContent  = investor.full_name || user.email;
+          cardSince.textContent = investor.member_since || '—';
           const units = investor.units_owned;
-          document.getElementById('card-units').textContent = (units != null)
+          cardUnits.textContent = (units != null)
             ? Number(units).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
             : '—';
+        } else {
+          cardName.textContent  = user.email;
+          cardSince.textContent = '—';
+          cardUnits.textContent = '—';
         }
-      } catch (e) {}
+
+        // Remove skeleton shimmer once values are set
+        [cardName, cardSince, cardUnits].forEach(el => el.classList.remove('skeleton'));
+      } catch (e) {
+        document.querySelectorAll('.card-value.skeleton').forEach(el => {
+          el.textContent = '—';
+          el.classList.remove('skeleton');
+        });
+      }
 
       // Remove loading indicators
       const sl = document.getElementById('shared-loading');
