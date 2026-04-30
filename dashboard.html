@@ -57,8 +57,15 @@
 
         <!-- SHARED DOCUMENTS -->
         <div class="doc-section" id="shared-section">
-          <h2 class="section-title">Letters & Quarterly Reports</h2>
-          <p class="section-subtitle">Available to all partners</p>
+          <div class="doc-section-header">
+            <div>
+              <h2 class="section-title">Letters & Quarterly Reports</h2>
+              <p class="section-subtitle">Available to all partners</p>
+            </div>
+            <div class="doc-search-wrap" id="shared-search-wrap" style="display:none;">
+              <input type="search" class="doc-search" id="shared-search" placeholder="Filter documents…" aria-label="Filter shared documents" />
+            </div>
+          </div>
           <div id="shared-doc-list">
             <div class="doc-list" id="shared-loading">
               <div class="doc-row doc-row--skeleton"><div class="doc-info"><div class="doc-icon skel-icon"></div><div class="doc-skel-text"><div class="skeleton skel-line skel-line--lg"></div><div class="skeleton skel-line skel-line--sm"></div></div></div><div class="skeleton skel-btn"></div></div>
@@ -72,8 +79,15 @@
 
         <!-- PRIVATE DOCUMENTS -->
         <div class="doc-section" id="private-section">
-          <h2 class="section-title">Your Personal Documents</h2>
-          <p class="section-subtitle">K-1s, unit ownership, and personal statements</p>
+          <div class="doc-section-header">
+            <div>
+              <h2 class="section-title">Your Personal Documents</h2>
+              <p class="section-subtitle">K-1s, unit ownership, and personal statements</p>
+            </div>
+            <div class="doc-search-wrap" id="private-search-wrap" style="display:none;">
+              <input type="search" class="doc-search" id="private-search" placeholder="Filter documents…" aria-label="Filter personal documents" />
+            </div>
+          </div>
           <div id="private-doc-list">
             <div class="doc-list" id="private-loading">
               <div class="doc-row doc-row--skeleton"><div class="doc-info"><div class="doc-icon skel-icon"></div><div class="doc-skel-text"><div class="skeleton skel-line skel-line--lg"></div><div class="skeleton skel-line skel-line--sm"></div></div></div><div class="skeleton skel-btn"></div></div>
@@ -298,19 +312,72 @@
       if (sl) sl.remove();
       if (pl) pl.remove();
 
+      // Wire up search/filter for a doc container.
+      // Shows the search input only when files are present at root level.
+      function wireSearch(searchEl, wrapEl, containerEl) {
+        if (!searchEl || !wrapEl || !containerEl) return;
+
+        // Show search input
+        wrapEl.style.display = '';
+
+        searchEl.addEventListener('input', () => {
+          const q = searchEl.value.trim().toLowerCase();
+          const list = containerEl.querySelector('.doc-list');
+          if (!list) return;
+
+          const rows = list.querySelectorAll('.doc-row:not(.doc-row--skeleton)');
+          let visibleCount = 0;
+
+          rows.forEach(row => {
+            const nameEl = row.querySelector('.doc-name');
+            const text = (nameEl ? nameEl.textContent : '').toLowerCase();
+            const show = !q || text.includes(q);
+            row.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+          });
+
+          // Show/hide empty state
+          let emptyMsg = list.querySelector('.search-empty');
+          if (visibleCount === 0 && q) {
+            if (!emptyMsg) {
+              emptyMsg = document.createElement('div');
+              emptyMsg.className = 'empty-state search-empty';
+              list.appendChild(emptyMsg);
+            }
+            emptyMsg.textContent = `No documents match "${searchEl.value.trim()}".`;
+          } else if (emptyMsg) {
+            emptyMsg.remove();
+          }
+        });
+      }
+
       // Render shared folder (clickable navigation)
-      await renderFolder(
+      const sharedCount = await renderFolder(
         'shared',
         document.getElementById('shared-doc-list'),
         'Shared'
       );
+      if (sharedCount > 0) {
+        wireSearch(
+          document.getElementById('shared-search'),
+          document.getElementById('shared-search-wrap'),
+          document.getElementById('shared-doc-list')
+        );
+      }
 
       // Render private folder (clickable navigation)
-      await renderFolder(
+      const privateCount = await renderFolder(
         user.id,
         document.getElementById('private-doc-list'),
         'Personal'
       );
+      if (privateCount > 0) {
+        wireSearch(
+          document.getElementById('private-search'),
+          document.getElementById('private-search-wrap'),
+          document.getElementById('private-doc-list')
+        );
+      }
     })();
 
     document.getElementById('logout-btn').addEventListener('click', async () => {

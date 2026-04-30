@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found — BlackSalt Capital L.P.</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .not-found {
+      min-height: calc(100vh - 5.75rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .not-found-inner {
+      max-width: 480px;
+      padding: 3rem 1.5rem;
+    }
+
+    .not-found-code {
+      font-size: clamp(5rem, 20vw, 10rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.06em;
+      color: rgba(255, 255, 255, 0.06);
+      margin: 0 0 1.5rem;
+      user-select: none;
+    }
+
+    .not-found-heading {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 0 0 0.75rem;
+    }
+
+    .not-found-body {
+      color: var(--muted);
+      font-size: 0.97rem;
+      margin: 0 0 2.25rem;
+      line-height: 1.6;
+    }
+
+    .not-found-home {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.78rem 1.5rem;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.02);
+      transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    }
+
+    .not-found-home:hover,
+    .not-found-home:focus-visible {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand" aria-label="BlackSalt Capital home">BlackSalt Capital L.P.</a>
+      <div class="header-actions">
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="index.html#strategy">Strategy</a>
+          <a href="index.html#about">About</a>
+          <a href="index.html#contact">Contact</a>
+        </nav>
+        <a class="login-button" href="login.html">Investor Login</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="not-found" aria-labelledby="nf-heading">
+      <div class="not-found-inner">
+        <p class="not-found-code" aria-hidden="true">404</p>
+        <h1 class="not-found-heading" id="nf-heading">Page not found.</h1>
+        <p class="not-found-body">The page you're looking for doesn't exist or has been moved.</p>
+        <a href="index.html" class="not-found-home">Back to Home</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> BlackSalt Capital L.P. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const y = document.getElementById('year');
+    if (y) y.textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>
