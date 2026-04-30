@@ -184,10 +184,35 @@
       }
 
       const folders = items.filter(i => i.id === null && i.name && !i.name.startsWith('.'));
-      // Sort files newest-first so the most recent statement is always at the top
+
+      // Parse a Q# YYYY score from a filename for tiebreaking same-day uploads.
+      // Returns a numeric score (higher = more recent) or null if no match.
+      function parseQYearScore(name) {
+        const match = name.match(/Q(\d)\s+(\d{4})/i);
+        if (!match) return null;
+        return parseInt(match[2]) * 10 + parseInt(match[1]);
+      }
+
+      // Sort newest-first by upload date.
+      // If two files share the same calendar day, fall back to Q# YYYY parsed
+      // from the filename (so Q4 2030 > Q3 2030 > Q4 2029, etc.).
+      // If neither file matches the pattern, fall back to alphabetical order.
       const files = items
         .filter(i => i.id !== null && i.name && !i.name.startsWith('.'))
-        .sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+        .sort((a, b) => {
+          const dayA = a.updated_at ? new Date(a.updated_at).toDateString() : '';
+          const dayB = b.updated_at ? new Date(b.updated_at).toDateString() : '';
+
+          if (dayA !== dayB) {
+            return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+          }
+
+          const scoreA = parseQYearScore(a.name);
+          const scoreB = parseQYearScore(b.name);
+          if (scoreA !== null && scoreB !== null) return scoreB - scoreA;
+
+          return a.name.localeCompare(b.name);
+        });
 
       const list = document.createElement('div');
       list.className = 'doc-list';
