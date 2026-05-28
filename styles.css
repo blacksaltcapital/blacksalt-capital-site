@@ -313,7 +313,7 @@ h1 {
   cursor: not-allowed;
 }
 
-.contact-notice {
+.section-content .contact-notice {
   margin: 0 0 1.5rem;
   padding: 0.9rem 1.1rem;
   border: 1px solid var(--line);
