@@ -313,6 +313,18 @@ h1 {
   cursor: not-allowed;
 }
 
+.contact-notice {
+  margin: 0 0 1.5rem;
+  padding: 0.9rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  border-radius: 0.5rem;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
 .contact-feedback {
   margin-top: 1rem;
   padding: 0.7rem 0.9rem;
