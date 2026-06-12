@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Investor Login — BlackSalt Capital L.P.</title>
   <meta name="description" content="Secure investor portal for BlackSalt Capital L.P. limited partners." />
+  <meta name="robots" content="noindex" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -20,10 +21,10 @@
 
   <header class="site-header">
     <div class="container header-inner">
-      <a href="index.html" class="brand" aria-label="BlackSalt Capital home">BlackSalt Capital L.P.</a>
+      <a href="/" class="brand" aria-label="BlackSalt Capital home">BlackSalt Capital L.P.</a>
       <div class="header-actions">
         <nav id="site-nav" class="site-nav" aria-label="Primary navigation">
-          <a href="index.html">Back to Site</a>
+          <a href="/">Back to Site</a>
         </nav>
       </div>
     </div>
@@ -56,7 +57,7 @@
             <button type="submit" class="auth-btn" id="login-btn">Sign In</button>
           </form>
 
-          <div class="auth-error" id="login-error"></div>
+          <div class="auth-error" id="login-error" role="alert"></div>
         </div>
 
         <!-- FORGOT PASSWORD FORM -->
@@ -72,8 +73,8 @@
             <button type="submit" class="auth-btn" id="forgot-btn">Send Reset Link</button>
           </form>
 
-          <div class="auth-error" id="forgot-error"></div>
-          <div class="auth-success" id="forgot-success"></div>
+          <div class="auth-error" id="forgot-error" role="alert"></div>
+          <div class="auth-success" id="forgot-success" role="status"></div>
 
           <div class="auth-footer" style="margin-top: 1.25rem;">
             <a href="#" id="show-login">← Back to sign in</a>
@@ -90,7 +91,7 @@
   <footer class="site-footer">
     <div class="container footer-inner">
       <p>&copy; <span id="year"></span> BlackSalt Capital L.P. All rights reserved.</p>
-      <a href="index.html">Back to site</a>
+      <a href="/">Back to site</a>
     </div>
   </footer>
 
@@ -101,7 +102,7 @@
     // If already logged in, go to dashboard
     (async function checkSession() {
       const { data: { session } } = await sb.auth.getSession();
-      if (session) window.location.href = 'dashboard.html';
+      if (session) window.location.href = '/dashboard';
     })();
 
     // Password visibility toggles
@@ -150,7 +151,7 @@
         loginBtn.disabled = false;
         loginBtn.textContent = 'Sign In';
       } else {
-        window.location.href = 'dashboard.html';
+        window.location.href = '/dashboard';
       }
     });
 

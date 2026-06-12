@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Investor Dashboard — BlackSalt Capital L.P.</title>
+  <meta name="robots" content="noindex" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -19,10 +20,10 @@
 
   <header class="site-header">
     <div class="container header-inner">
-      <a href="index.html" class="brand" aria-label="BlackSalt Capital home">BlackSalt Capital L.P.</a>
+      <a href="/" class="brand" aria-label="BlackSalt Capital home">BlackSalt Capital L.P.</a>
       <div class="header-actions">
         <nav id="site-nav" class="site-nav" aria-label="Dashboard navigation">
-          <a href="index.html">Home</a>
+          <a href="/">Home</a>
         </nav>
         <button class="logout-btn" id="logout-btn">Sign Out</button>
       </div>
@@ -117,7 +118,8 @@
     const backArrowSVG = `<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>`;
 
     function getFileType(name) {
-      const ext = (name.split('.').pop() || '').toLowerCase();
+      // Strip to alphanumerics — this value is injected into a class attribute
+      const ext = (name.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8);
       const known = ['pdf', 'xlsx', 'xls', 'csv', 'docx', 'doc'];
       return known.includes(ext) ? ext.replace('xls', 'xlsx').replace('doc', 'docx') : ext || 'file';
     }
@@ -333,7 +335,7 @@
       const { data: { session } } = await sb.auth.getSession();
 
       if (!session) {
-        window.location.href = 'login.html';
+        window.location.href = '/login';
         return;
       }
 
@@ -403,7 +405,7 @@
 
     document.getElementById('logout-btn').addEventListener('click', async () => {
       await sb.auth.signOut();
-      window.location.href = 'login.html';
+      window.location.href = '/login';
     });
   </script>
 </body>
